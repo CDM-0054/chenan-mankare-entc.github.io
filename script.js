@@ -101,48 +101,30 @@ async function saveProgress(progress) {
 }
 
 // ─── SYNC STATUS ───
-let syncStatusEl = null;
-
 function createSyncStatus() {
   if (document.querySelector('.sync-status')) return;
   const status = document.createElement('div');
   status.className = 'sync-status';
-  status.style.cssText = `
-    position: fixed; bottom: 80px; right: 20px;
-    background: rgba(13,18,36,0.8);
-    backdrop-filter: blur(8px);
-    padding: 8px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    color: var(--muted);
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
-  `;
   status.innerHTML = `
     <span class="sync-dot" style="color: var(--neon);">●</span>
     <span class="sync-text">Cloud Sync Active</span>
   `;
   document.body.appendChild(status);
-  syncStatusEl = status;
 }
 
 function updateSyncStatus(ok) {
-  if (!syncStatusEl) return;
-  const dot = syncStatusEl.querySelector('.sync-dot');
-  const text = syncStatusEl.querySelector('.sync-text');
+  const el = document.querySelector('.sync-status');
+  if (!el) return;
+  const dot = el.querySelector('.sync-dot');
+  const text = el.querySelector('.sync-text');
   if (ok) {
     dot.style.color = 'var(--neon)';
     text.textContent = '✅ Synced';
-    syncStatusEl.style.borderColor = 'rgba(0,245,196,0.3)';
+    el.style.borderColor = 'rgba(0,245,196,0.3)';
   } else {
     dot.style.color = 'var(--neon3)';
     text.textContent = '⚠️ Offline';
-    syncStatusEl.style.borderColor = 'rgba(255,58,110,0.3)';
+    el.style.borderColor = 'rgba(255,58,110,0.3)';
   }
 }
 
