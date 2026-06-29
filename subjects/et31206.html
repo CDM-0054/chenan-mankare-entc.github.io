@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Electrical Circuits — Chetan Mankare</title>
+  <title>Digital Techniques — Chetan Mankare</title>
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@300;400;600;700&family=Orbitron:wght@400;700;900&display=swap" rel="stylesheet">
   
   <!-- ════════════════════════════════════════════ -->
@@ -555,16 +555,15 @@
 
   <script>
     // ─── SUBJECT DATA ───
-    const subjectCode = 'ET31201';
-    const subjectName = 'Electrical Circuits and Networks';
-    const chapters = [
-      { title: 'Laws and Definition', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Kirchhoff's Current Law (KCL)\n// Sum of currents entering = Sum leaving\nint calculateCurrent(int voltage, int resistance) {\n    return voltage / resistance;\n}`, lang: 'cpp' },
-      { title: 'Mesh and Nodal Analysis', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Mesh Analysis\nint meshCurrent1 = 0, meshCurrent2 = 0;\nfor(int i=0; i<10; i++) {\n    meshCurrent1 += voltage / resistance;\n}`, lang: 'cpp' },
-      { title: 'Network Theorems', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Thevenin's Theorem\nint theveninVoltage = openCircuitVoltage;\nint theveninResistance = equivalentResistance;`, lang: 'cpp' },
-      { title: 'Two Port Network', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Z Parameters\nint z11 = 10, z12 = 5;\nint z21 = 5, z22 = 10;`, lang: 'cpp' },
-      { title: 'Resonant Circuit', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Resonant Frequency\nfloat resonantFrequency(float L, float C) {\n    return 1 / (2 * 3.14159 * sqrt(L * C));\n}`, lang: 'cpp' },
-      { title: 'Filter and Attenuator', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Low Pass Filter\nfloat cutoffFrequency(float R, float C) {\n    return 1 / (2 * 3.14159 * R * C);\n}`, lang: 'cpp' }
-    ];
+const subjectCode = 'ET31206';
+const subjectName = 'Digital Techniques';
+const chapters = [
+  { title: 'Number System and Codes', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Binary to Decimal\n// Decimal = Σ(bit * 2^position)\nint binaryToDecimal(int binary) {\n    int decimal = 0, pos = 0;\n    while(binary > 0) {\n        decimal += (binary % 10) * pow(2, pos++);\n        binary /= 10;\n    }\n    return decimal;\n}`, lang: 'cpp' },
+  { title: 'Logic Gates and Logic Families', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// AND Gate\n// Y = A & B\nint AND_Gate(int A, int B) {\n    return A & B;\n}`, lang: 'cpp' },
+  { title: 'Combinational Logic Circuits', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Full Adder\n// Sum = A ⊕ B ⊕ Cin\n// Carry = (A & B) | (Cin & (A ⊕ B))\nvoid fullAdder(int A, int B, int Cin) {\n    int sum = A ^ B ^ Cin;\n    int carry = (A & B) | (Cin & (A ^ B));\n}`, lang: 'cpp' },
+  { title: 'Sequential Logic Circuits', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// D Flip-Flop\n// Q = D (on clock edge)\nint D_FF(int D, int clk) {\n    if(clk == 1) return D;\n    return 0;\n}`, lang: 'cpp' },
+  { title: 'Converters and Memories', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// R-2R DAC\n// Vout = (Vref / 2^n) * Digital_Input\nfloat R2R_DAC(float Vref, int digitalInput) {\n    int n = 8;\n    return (Vref / pow(2, n)) * digitalInput;\n}`, lang: 'cpp' }
+];
 
     const API_URL = 'https://sheetdb.io/api/v1/0qetabo87bu71';
     const ADMIN_PASSWORD = 'chetan123';
