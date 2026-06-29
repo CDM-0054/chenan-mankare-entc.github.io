@@ -555,16 +555,15 @@
 
   <script>
     // ─── SUBJECT DATA ───
-    const subjectCode = 'ET31201';
-    const subjectName = 'Electrical Circuits and Networks';
-    const chapters = [
-      { title: 'Laws and Definition', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Kirchhoff's Current Law (KCL)\n// Sum of currents entering = Sum leaving\nint calculateCurrent(int voltage, int resistance) {\n    return voltage / resistance;\n}`, lang: 'cpp' },
-      { title: 'Mesh and Nodal Analysis', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Mesh Analysis\nint meshCurrent1 = 0, meshCurrent2 = 0;\nfor(int i=0; i<10; i++) {\n    meshCurrent1 += voltage / resistance;\n}`, lang: 'cpp' },
-      { title: 'Network Theorems', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Thevenin's Theorem\nint theveninVoltage = openCircuitVoltage;\nint theveninResistance = equivalentResistance;`, lang: 'cpp' },
-      { title: 'Two Port Network', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Z Parameters\nint z11 = 10, z12 = 5;\nint z21 = 5, z22 = 10;`, lang: 'cpp' },
-      { title: 'Resonant Circuit', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Resonant Frequency\nfloat resonantFrequency(float L, float C) {\n    return 1 / (2 * 3.14159 * sqrt(L * C));\n}`, lang: 'cpp' },
-      { title: 'Filter and Attenuator', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Low Pass Filter\nfloat cutoffFrequency(float R, float C) {\n    return 1 / (2 * 3.14159 * R * C);\n}`, lang: 'cpp' }
-    ];
+    const subjectCode = 'ET31203';
+const subjectName = 'Principles of Electronic Communication';
+const chapters = [
+  { title: 'Basics of Electronic Communication', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Signal to Noise Ratio\n// SNR = 10 * log10(P_signal / P_noise)\nfloat calculateSNR(float Ps, float Pn) {\n    return 10 * log10(Ps / Pn);\n}`, lang: 'cpp' },
+  { title: 'AM and FM Modulation', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// AM Modulation\n// m(t) = A_c * (1 + m_a * cos(2πf_m t)) * cos(2πf_c t)\nfloat AM_modulation(float Ac, float ma, float fm, float fc) {\n    return Ac * (1 + ma * cos(2*PI*fm*t)) * cos(2*PI*fc*t);\n}`, lang: 'cpp' },
+  { title: 'Transmitters and Receivers', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Superheterodyne Receiver\n// Intermediate Frequency: f_IF = f_LO - f_RF\nfloat intermediateFreq(float fLO, float fRF) {\n    return fLO - fRF;\n}`, lang: 'cpp' },
+  { title: 'Wave Propagation', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Free Space Path Loss\n// FSPL = 20*log10(d) + 20*log10(f) + 20*log10(4π/c)\nfloat freeSpaceLoss(float d, float f) {\n    return 20*log10(d) + 20*log10(f) + 32.44;\n}`, lang: 'cpp' },
+  { title: 'Antennas', pdf: 'https://drive.google.com/file/d/PLACEHOLDER/view', code: `// Dipole Antenna Length\n// λ = c / f\nfloat wavelength(float f) {\n    return 3e8 / f;\n}`, lang: 'cpp' }
+];
 
     const API_URL = 'https://sheetdb.io/api/v1/0qetabo87bu71';
     const ADMIN_PASSWORD = 'chetan123';
