@@ -4,65 +4,36 @@ let isAdmin = localStorage.getItem('isAdmin') === 'true';
 
 // ─── SUBJECT DATA ───
 const subjectsData = [
-  {
-    code: 'ET31201',
-    name: 'Electrical Circuits and Networks',
-    chapters: ['Laws and Definition', 'Mesh and Nodal Analysis', 'Network Theorems', 'Two Port Network', 'Resonant Circuit', 'Filter and Attenuator']
-  },
-  {
-    code: 'ET31203',
-    name: 'Principles of Electronic Communication',
-    chapters: ['Basics of Electronic Communication', 'AM and FM Modulation', 'Transmitters and Receivers', 'Wave Propagation', 'Antennas']
-  },
-  {
-    code: 'ET31204',
-    name: 'Linear Integrated Circuits',
-    chapters: ['Fundamentals of Op-Amp', 'Op-Amp Configuration', 'Linear Application of Op-Amp', 'Filters and Oscillators', 'Timers']
-  },
-  {
-    code: 'ET31206',
-    name: 'Digital Techniques',
-    chapters: ['Number System and Codes', 'Logic Gates and Logic Families', 'Combinational Logic Circuits', 'Sequential Logic Circuits', 'Converters and Memories']
-  },
-  {
-    code: 'ET51201',
-    name: 'Python Programming',
-    chapters: ['Fundamentals of Python', 'Control Flow Statements', 'Data Structures in Python', 'File I/O Handling', 'Functions and Packages', 'Automation in Python']
-  }
+  { code: 'ET31201', name: 'Electrical Circuits and Networks', chapters: ['Laws and Definition', 'Mesh and Nodal Analysis', 'Network Theorems', 'Two Port Network', 'Resonant Circuit', 'Filter and Attenuator'] },
+  { code: 'ET31203', name: 'Principles of Electronic Communication', chapters: ['Basics of Electronic Communication', 'AM and FM Modulation', 'Transmitters and Receivers', 'Wave Propagation', 'Antennas'] },
+  { code: 'ET31204', name: 'Linear Integrated Circuits', chapters: ['Fundamentals of Op-Amp', 'Op-Amp Configuration', 'Linear Application of Op-Amp', 'Filters and Oscillators', 'Timers'] },
+  { code: 'ET31206', name: 'Digital Techniques', chapters: ['Number System and Codes', 'Logic Gates and Logic Families', 'Combinational Logic Circuits', 'Sequential Logic Circuits', 'Converters and Memories'] },
+  { code: 'ET51201', name: 'Python Programming', chapters: ['Fundamentals of Python', 'Control Flow Statements', 'Data Structures in Python', 'File I/O Handling', 'Functions and Packages', 'Automation in Python'] }
 ];
 
 // ─── SHEETDB CONFIG ───
+// 🔑 REPLACE THIS WITH YOUR ACTUAL SHEETDB API URL
 const API_URL = 'https://sheetdb.io/api/v1/0qetabo87bu71';
-const USER_ID = 'chetan';
-localStorage.setItem('userId', USER_ID);
 
-console.log('👤 User ID:', USER_ID);
-console.log('📊 Connected to SheetDB:', API_URL ? 'Yes' : 'No (using localStorage)');
+console.log('📊 API URL:', API_URL);
 
 // ─── GET PROGRESS ───
 async function getProgress() {
   try {
-    console.log('📊 Fetching progress from SheetDB...');
+    console.log('📊 Fetching from SheetDB...');
     
-    // Check if API is available
-    if (!API_URL || API_URL === 'https://sheetdb.io/api/v1/0qetabo87bu71') {
-      console.warn('⚠️ Using localStorage (SheetDB not configured)');
-      const local = localStorage.getItem('subjectProgress');
-      return local ? JSON.parse(local) : getDefaultProgress();
-    }
-    
-    // Fetch from SheetDB
+    // ✅ FIXED: Removed UserID filter
     const response = await fetch(`${API_URL}?sheet=Sheet1`);
     
     if (!response.ok) {
-      throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      throw new Error(`HTTP ${response.status}`);
     }
     
     const data = await response.json();
     console.log('📊 Data from SheetDB:', data);
     
     if (!data || data.length === 0) {
-      console.warn('⚠️ No data found in SheetDB');
+      console.warn('⚠️ No data found');
       return getDefaultProgress();
     }
     
@@ -76,20 +47,16 @@ async function getProgress() {
       }
     });
     
-    // Save to localStorage as backup
     localStorage.setItem('subjectProgress', JSON.stringify(progress));
     console.log('✅ Progress loaded from SheetDB');
+    updateSyncStatus(true);
     return progress;
     
   } catch (error) {
-    console.error('❌ Error fetching from SheetDB:', error);
-    // Fallback to localStorage
+    console.error('❌ Error:', error);
+    updateSyncStatus(false);
     const local = localStorage.getItem('subjectProgress');
-    if (local) {
-      console.log('📊 Using localStorage backup');
-      return JSON.parse(local);
-    }
-    return getDefaultProgress();
+    return local ? JSON.parse(local) : getDefaultProgress();
   }
 }
 
@@ -104,18 +71,79 @@ function getDefaultProgress() {
 // ─── SAVE PROGRESS ───
 async function saveProgress(progress) {
   localStorage.setItem('subjectProgress', JSON.stringify(progress));
-  if (!API_URL || API_URL === 'https://sheetdb.io/api/v1/0qetabo87bu71') return;
+  if (!API_URL) return;
+  
   try {
-    await fetch(`${API_URL}/UserID/${USER_ID}`, { method: 'DELETE' });
+    // ✅ FIXED: Removed UserID filter
+    await fetch(API_URL, { method: 'DELETE' });
+    
     const records = [];
     Object.keys(progress).forEach(code => {
       progress[code].forEach((status, index) => {
-        records.push({ UserID: USER_ID, SubjectCode: code, ChapterIndex: index, Status: status ? 'TRUE' : 'FALSE' });
+        records.push({ 
+          SubjectCode: code, 
+          ChapterIndex: index, 
+          Status: status ? 'TRUE' : 'FALSE', 
+          Notes: '' 
+        });
       });
     });
-    await fetch(API_URL, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(records) });
+    
+    await fetch(API_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(records)
+    });
     updateSyncStatus(true);
-  } catch(e) { updateSyncStatus(false); }
+  } catch(e) {
+    updateSyncStatus(false);
+  }
+}
+
+// ─── SYNC STATUS ───
+let syncStatusEl = null;
+
+function createSyncStatus() {
+  if (document.querySelector('.sync-status')) return;
+  const status = document.createElement('div');
+  status.className = 'sync-status';
+  status.style.cssText = `
+    position: fixed; bottom: 80px; right: 20px;
+    background: rgba(13,18,36,0.8);
+    backdrop-filter: blur(8px);
+    padding: 8px 14px;
+    border-radius: 20px;
+    border: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+    color: var(--muted);
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: all 0.3s;
+  `;
+  status.innerHTML = `
+    <span class="sync-dot" style="color: var(--neon);">●</span>
+    <span class="sync-text">Cloud Sync Active</span>
+  `;
+  document.body.appendChild(status);
+  syncStatusEl = status;
+}
+
+function updateSyncStatus(ok) {
+  if (!syncStatusEl) return;
+  const dot = syncStatusEl.querySelector('.sync-dot');
+  const text = syncStatusEl.querySelector('.sync-text');
+  if (ok) {
+    dot.style.color = 'var(--neon)';
+    text.textContent = '✅ Synced';
+    syncStatusEl.style.borderColor = 'rgba(0,245,196,0.3)';
+  } else {
+    dot.style.color = 'var(--neon3)';
+    text.textContent = '⚠️ Offline';
+    syncStatusEl.style.borderColor = 'rgba(255,58,110,0.3)';
+  }
 }
 
 // ─── CHECK ADMIN ───
@@ -125,14 +153,9 @@ function checkAdmin() {
   if (isAdmin) {
     if (badge) badge.classList.add('active');
     if (text) text.textContent = 'Admin Mode';
-    document.querySelectorAll('.chapter').forEach(el => { el.style.pointerEvents = 'auto'; el.style.opacity = '1'; });
-    document.querySelectorAll('.subject-card').forEach(el => { el.style.cursor = 'pointer'; });
   } else {
     if (badge) badge.classList.remove('active');
     if (text) text.textContent = 'View Only';
-    document.querySelectorAll('.chapter').forEach(el => { el.style.pointerEvents = 'none'; el.style.opacity = '0.7'; });
-    document.querySelectorAll('.subject-card').forEach(el => { el.style.cursor = 'default'; });
-    document.querySelectorAll('.checkbox').forEach(el => { el.style.cursor = 'default'; });
   }
 }
 
@@ -143,9 +166,11 @@ function showAdminPrompt() {
   document.getElementById('adminInput').focus();
   document.getElementById('adminError').textContent = '';
 }
+
 function hideAdminPrompt() {
   document.getElementById('adminPrompt').classList.remove('show');
 }
+
 function adminLogin() {
   const input = document.getElementById('adminInput');
   const error = document.getElementById('adminError');
@@ -162,6 +187,7 @@ function adminLogin() {
     input.focus();
   }
 }
+
 function adminLogout() {
   if (confirm('Logout from admin mode?')) {
     isAdmin = false;
@@ -171,6 +197,7 @@ function adminLogout() {
     console.log('🔒 Admin mode deactivated.');
   }
 }
+
 function toggleAdmin() { isAdmin ? adminLogout() : showAdminPrompt(); }
 
 // ─── RENDER SUBJECT CARDS ───
@@ -179,18 +206,14 @@ async function renderSubjects() {
   if (!container) return;
   
   const progress = await getProgress();
-  console.log('📊 Progress Data:', progress); // Debug log
+  console.log('📊 Progress Data:', progress);
   
   container.innerHTML = subjectsData.map((sub) => {
     const subProgress = progress[sub.code] || sub.chapters.map(() => false);
     const done = subProgress.filter(Boolean).length;
     const total = sub.chapters.length;
     const pct = Math.round((done / total) * 100);
-    
-    // Generate chapter dots
-    const dots = subProgress.map(status => 
-      `<span class="dot ${status ? 'done' : ''}"></span>`
-    ).join('');
+    const dots = subProgress.map(status => `<span class="dot ${status ? 'done' : ''}"></span>`).join('');
     
     return `
       <a href="subjects/${sub.code.toLowerCase()}.html" class="subject-card-link">
@@ -204,9 +227,7 @@ async function renderSubjects() {
               <span class="label">Progress</span>
               <span class="pct">${pct}%</span>
             </div>
-            <div class="mini-bar">
-              <div class="fill" style="width: ${pct}%;"></div>
-            </div>
+            <div class="mini-bar"><div class="fill" style="width: ${pct}%;"></div></div>
             <div class="chapters-preview">${dots}</div>
           </div>
           <div class="subject-card-footer">
@@ -221,6 +242,7 @@ async function renderSubjects() {
   await updateGraph(progress);
   checkAdmin();
 }
+
 // ─── UPDATE GRAPH ───
 async function updateGraph(progress) {
   const graph = document.getElementById('progressGraph');
@@ -280,56 +302,6 @@ function addAdminUI() {
   `;
   document.body.appendChild(badge);
 }
-
-// ─── SYNC STATUS ───
-let syncStatusEl = null;
-function createSyncStatus() {
-  if (document.querySelector('.sync-status')) return;
-  const status = document.createElement('div');
-  status.className = 'sync-status';
-  status.style.cssText = `
-    position: fixed; bottom: 80px; right: 20px;
-    background: rgba(13,18,36,0.8);
-    backdrop-filter: blur(8px);
-    padding: 8px 14px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    font-family: var(--font-mono);
-    font-size: 0.6rem;
-    color: var(--muted);
-    z-index: 50;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: all 0.3s;
-  `;
-  status.innerHTML = `
-    <span class="sync-dot" style="color: var(--neon);">●</span>
-    <span class="sync-text">Cloud Sync ${API_URL && API_URL !== 'https://sheetdb.io/api/v1/0qetabo87bu71' ? 'Active' : 'Offline'}</span>
-  `;
-  document.body.appendChild(status);
-  syncStatusEl = status;
-}
-function updateSyncStatus(ok) {
-  if (!syncStatusEl) return;
-  const dot = syncStatusEl.querySelector('.sync-dot');
-  const text = syncStatusEl.querySelector('.sync-text');
-  if (ok) {
-    dot.style.color = 'var(--neon)';
-    text.textContent = '✅ Synced';
-    syncStatusEl.style.borderColor = 'rgba(0,245,196,0.3)';
-  } else {
-    dot.style.color = 'var(--neon3)';
-    text.textContent = '⚠️ Offline';
-    syncStatusEl.style.borderColor = 'rgba(255,58,110,0.3)';
-  }
-}
-
-// ─── KEYBOARD SHORTCUTS ───
-document.addEventListener('keydown', function(e) {
-  if (e.key === 'Enter' && document.getElementById('adminPrompt').classList.contains('show')) adminLogin();
-  if (e.key === 'Escape' && document.getElementById('adminPrompt').classList.contains('show')) hideAdminPrompt();
-});
 
 // ─── STARFIELD ───
 const canvas = document.getElementById('starfield');
@@ -516,62 +488,16 @@ function updateVisitCount() {
 }
 updateVisitCount();
 
-// ─── SAVE NOTES TO GOOGLE SHEETS ───
-async function saveNotes(subjectCode, chapterIndex, notes) {
-  const progress = await getProgress();
-  const noteKey = `notes_${subjectCode}_${chapterIndex}`;
-  progress[noteKey] = notes;
-  await saveProgress(progress);
-  return true;
-}
-
-async function getNotes(subjectCode, chapterIndex) {
-  const progress = await getProgress();
-  const noteKey = `notes_${subjectCode}_${chapterIndex}`;
-  return progress[noteKey] || '';
-}
-
-// ─── COPY CODE FUNCTION ───
-function copyCode(button) {
-  const codeBlock = button.closest('.code-section').querySelector('.code-body');
-  const text = codeBlock.textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const originalText = button.textContent;
-    button.textContent = '✅ Copied!';
-    setTimeout(() => button.textContent = originalText, 2000);
-  }).catch(() => {
-    const range = document.createRange();
-    range.selectNode(codeBlock);
-    window.getSelection().removeAllRanges();
-    window.getSelection().addRange(range);
-    document.execCommand('copy');
-    const originalText = button.textContent;
-    button.textContent = '✅ Copied!';
-    setTimeout(() => button.textContent = originalText, 2000);
-  });
-}
-
 // ─── INIT ───
 document.addEventListener('DOMContentLoaded', async () => {
   addAdminUI();
   createSyncStatus();
   await renderSubjects();
   checkAdmin();
-  if (API_URL && API_URL !== 'https://sheetdb.io/api/v1/0qetabo87bu71') updateSyncStatus(true);
-  console.log('📚 Subjects loaded! Click a card to view chapters.');
+  console.log('📚 Subjects loaded!');
   console.log('🔐 Admin mode:', isAdmin ? 'ON' : 'OFF');
 });
 
-// ─── LOAD USERNAME ───
-document.addEventListener('DOMContentLoaded', () => {
-  const input = document.getElementById('usernameInput');
-  if (input) {
-    input.value = localStorage.getItem('userId') || '';
-    input.addEventListener('keydown', function(e) { if (e.key === 'Enter') changeUser(); });
-  }
-});
-
-// ─── CONSOLE ───
 console.log('%c🚀 Chetan Mankare - ENTC Portfolio', 'font-size: 20px; color: #00f5c4; font-weight: bold;');
 console.log('%c📚 Track your semester progress with cloud sync!', 'font-size: 14px; color: #7b2fff;');
 console.log('%c🔐 Click the "View Only" badge to unlock admin mode', 'font-size: 14px; color: #c8d8f0;');
